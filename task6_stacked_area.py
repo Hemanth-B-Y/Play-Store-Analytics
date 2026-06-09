@@ -1,4 +1,3 @@
-# task6_stacked_area.py
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
@@ -63,7 +62,7 @@ def render():
 
     # Pivot for stacked area
     pivot = monthly.pivot_table(index="YM", columns="Category",
-                                 values="Cumulative", aggfunc="sum").fillna(method="ffill").fillna(0)
+                                 values="Cumulative", aggfunc="sum").ffill().fillna(0)
     pivot_mom = monthly.pivot_table(index="YM", columns="Category",
                                      values="MoM_Pct", aggfunc="mean")
 
