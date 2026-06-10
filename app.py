@@ -336,16 +336,45 @@ with tab7:
     st.markdown("## 🔍 Dataset Overview")
     import plotly.express as px
     import plotly.graph_objects as go
+    import numpy as np
 
     col_a, col_b = st.columns(2, gap="large")
 
     with col_a:
         st.markdown("### 📊 Top Categories by Installs")
-        cat_inst = (df.groupby("Category")["Installs_Clean"].sum().sort_values(ascending=True).tail(15).reset_index())
-        fig1 = px.bar(cat_inst, x="Installs_Clean", y="Category", orientation="h", color="Installs_Clean",
-                      color_continuous_scale=[f"rgb(10,14,39)", f"rgb(0,217,255)"], template="plotly_dark")
-        fig1.update_layout(paper_bgcolor=BG, plot_bgcolor=PANEL, height=480, showlegend=False,
-                          coloraxis_showscale=False, margin=dict(l=10,r=20,t=20,b=20))
+        cat_inst = (df.groupby("Category")["Installs_Clean"].sum()
+                   .sort_values(ascending=True)
+                   .tail(15)
+                   .reset_index())
+        
+        # ✅ FIX: Clean data and use go.Bar for more robust rendering
+        cat_inst = cat_inst[cat_inst["Installs_Clean"].notna() & 
+                            (cat_inst["Installs_Clean"] != np.inf) &
+                            (cat_inst["Installs_Clean"] > 0)].copy()
+        
+        fig1 = go.Figure(go.Bar(
+            y=cat_inst["Category"],
+            x=cat_inst["Installs_Clean"],
+            orientation="h",
+            marker=dict(
+                color=cat_inst["Installs_Clean"],
+                colorscale=[[0, "rgb(10,14,39)"], [1, "rgb(0,217,255)"]],
+                showscale=False,
+                line=dict(width=0)
+            ),
+            hovertemplate="<b>%{y}</b><br>Installs: %{x:,.0f}<extra></extra>"
+        ))
+        
+        fig1.update_layout(
+            paper_bgcolor=BG,
+            plot_bgcolor=PANEL,
+            height=480,
+            showlegend=False,
+            margin=dict(l=150, r=20, t=20, b=20),
+            xaxis=dict(gridcolor=GRID),
+            yaxis=dict(gridcolor=GRID),
+            font=dict(color=TEXT)
+        )
         st.plotly_chart(fig1, use_container_width=True)
 
     with col_b:
